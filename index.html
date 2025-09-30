@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client list app</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div class="main-div">
+        <h2 style="text-align: center;">Client list</h2>
+        <button id="add-button">Добавить клиента</button>
+        <ul id="client-list">
+            <!-- Список клиентов будет добавлен через JS -->
+        </ul>
+
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque, dolore repellat. Laboriosam ullam hic, quidem cupiditate architecto rem cumque itaque non, voluptate autem, accusantium veniam? Modi excepturi ipsam blanditiis accusamus!</p>
+    </div>
+    <script>
+        let clients = [
+            'client 1',
+            'client 2',
+            'client 3'
+        ];
+
+        const clientList = document.getElementById('client-list');
+
+        function renderClients() {
+            clientList.innerHTML = '';
+            clients.forEach((client, index) => {
+                const li = document.createElement('li');
+                li.textContent = client + ' ';
+                const btn = document.createElement('button');
+                btn.textContent = 'убрать';
+                btn.addEventListener('click', () => {
+                    clients.splice(index, 1);
+                    renderClients();
+                });
+                li.appendChild(btn);
+                clientList.appendChild(li);
+            });
+        }
+
+        addButton = document.getElementById('add-button');
+        addButton.addEventListener('click', function () {
+            const rand = Math.floor(Math.random() * 50);
+            clients.push('client ' + rand);
+            renderClients();
+        });
+
+        renderClients();
+        
+        function pay(price) {
+            const password = 'мой ключ';
+            makepayment(price, password);
+        }
+    </script>
+</body>
+
+</html>
+
