@@ -6,31 +6,30 @@
 //   phone: String (optional),
 //   created_at: String (ISO date)
 // }
+const API = 'http://localhost:3002/api/clients';
 
-let nextClientId = 1;
-let clients = [
-    {
-        id: nextClientId++,
-        name: "Иван Иванов",
-        email: "ivan" + Math.floor(Math.random() * 1000) + "@example.com",
-        phone: "+79991234567",
-        created_at: new Date().toISOString()
-    },
-    {
-        id: nextClientId++,
-        name: "Мария Петрова",
-        email: "maria" + Math.floor(Math.random() * 1000) + "@example.com",
-        phone: "+79997654321",
-        created_at: new Date().toISOString()
-    },
-    {
-        id: nextClientId++,
-        name: "John Smith",
-        email: "john" + Math.floor(Math.random() * 1000) + "@example.com",
-        phone: "",
-        created_at: new Date().toISOString()
+async function fetchJSON(url, options) {
+  const res = await fetch(url, options);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+let clients = [];
+
+// Загружаем клиентов с сервера при запуске
+async function loadClients() {
+    try {
+        clients = await fetchJSON(API);
+        renderClients();
+    } catch (error) {
+        console.error('Ошибка загрузки клиентов:', error);
+        alert('Не удалось загрузить клиентов с сервера');
     }
-];
+}
+
+// Загружаем данные при загрузке страницы
+loadClients();
+
 
 const clientList = document.getElementById('client-list');
 
@@ -75,9 +74,15 @@ function renderClients() {
         li.appendChild(infoDiv);
         const btn = document.createElement('button');
         btn.textContent = 'убрать';
-        btn.addEventListener('click', () => {
-            clients.splice(index, 1);
-            renderClients();
+        btn.addEventListener('click', async () => {
+            try {
+                await fetchJSON(`${API}/${client.id}`, { method: 'DELETE' });
+                clients = clients.filter(c => c.id !== client.id);
+                renderClients();
+            } catch (error) {
+                console.error('Ошибка удаления клиента:', error);
+                alert('Не удалось удалить клиента: ' + error.message);
+            }
         });
         li.appendChild(btn);
         clientList.appendChild(li);
@@ -85,23 +90,25 @@ function renderClients() {
 }
 
 const addButton = document.getElementById('add-button');
-addButton.addEventListener('click', function () {
+addButton.addEventListener('click', async function () {
     // Генерируем уникальный email и имя
     const rand = Math.floor(Math.random() * 10000);
     const newClient = {
-        id: nextClientId++,
         name: "Клиент " + rand,
         email: "client" + rand + "@example.com",
-        phone: Math.random() > 0.5 ? "+7999" + (1000000 + rand) : "",
-        created_at: new Date().toISOString()
+        phone: Math.random() > 0.5 ? "+7999" + (1000000 + rand) : ""
     };
-    // Проверка уникальности email
-    if (clients.some(c => c.email === newClient.email)) {
-        alert("Email уже существует!");
-        return;
+    
+    try {
+        const response = await fetchJSON(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newClient)
+        });
+        clients.push(response);
+        renderClients();
+    } catch (error) {
+        console.error('Ошибка добавления клиента:', error);
+        alert('Не удалось добавить клиента: ' + error.message);
     }
-    clients.push(newClient);
-    renderClients();
 });
-
-renderClients();
